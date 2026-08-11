@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>黄金小微结算数据</title>
+    <style>
+:root {
+  color-scheme: light;
+  --bg: #f5f1e8;
+  --ink: #20242b;
+  --muted: #6b7280;
+  --line: #ded6c8;
+  --panel: rgba(255, 255, 255, 0.88);
+  --gold: #b8871b;
+  --gold-deep: #7d5a10;
+  --green: #0f8b6f;
+  --blue: #2563eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background:
+    linear-gradient(135deg, rgba(184, 135, 27, 0.14), transparent 34%),
+    linear-gradient(315deg, rgba(15, 139, 111, 0.12), transparent 32%),
+    var(--bg);
+}
+
+button,
+select {
+  font: inherit;
+}
+
+.dashboard {
+  width: min(1680px, calc(100vw - 40px));
+  margin: 0 auto;
+  padding: 28px 0 36px;
+}
+
+.hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 148px;
+  padding: 30px 34px;
+  color: white;
+  background:
+    linear-gradient(120deg, rgba(31, 41, 55, 0.96), rgba(83, 67, 36, 0.94)),
+    linear-gradient(90deg, var(--gold), var(--green));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(36, 28, 12, 0.2);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #f2d28a;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 54px);
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.status {
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 14px;
+}
+
+.refresh-button,
+.control-strip button {
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0 18px;
+  cursor: pointer;
+}
+
+.refresh-button {
+  color: #1d1607;
+  background: #f2c75c;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(242, 199, 92, 0.24);
+  white-space: nowrap;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.metric {
+  min-height: 116px;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid rgba(222, 214, 200, 0.9);
+  border-radius: 8px;
+  box-shadow: 0 10px 26px rgba(69, 55, 24, 0.08);
+}
+
+.metric span {
+  display: block;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.metric strong {
+  display: block;
+  font-size: 28px;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.metric-main {
+  background: linear-gradient(135deg, #fffaf0, #ffffff);
+  border-color: rgba(184, 135, 27, 0.34);
+}
+
+.metric-main strong {
+  color: var(--gold-deep);
+  font-size: 36px;
+}
+
+.control-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.control-strip label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+.control-strip select {
+  min-width: 190px;
+  height: 40px;
+  border: 1px solid #cfc6b7;
+  border-radius: 6px;
+  padding: 0 12px;
+  color: #1f2937;
+  background: white;
+}
+
+.control-strip button {
+  color: #2d2619;
+  background: #fffdf8;
+  border-color: #cfc6b7;
+}
+
+.control-strip #queryBtn {
+  color: white;
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.table-panel {
+  margin-top: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 14px 34px rgba(69, 55, 24, 0.1);
+  overflow: hidden;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--line);
+  background: #fffaf0;
+}
+
+.panel-title h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.table-scroll {
+  overflow: auto;
+  max-height: calc(100vh - 414px);
+}
+
+table {
+  width: 100%;
+  min-width: 2650px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th,
+td {
+  height: 44px;
+  padding: 0 12px;
+  border-right: 1px solid #e5ded2;
+  border-bottom: 1px solid #e5ded2;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: #4b3a16;
+  background: #f8edd3;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+td {
+  color: #334155;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+tbody tr:hover td {
+  background: #fff8e8;
+}
+
+th:first-child,
+td:first-child,
+th:nth-child(2),
+td:nth-child(2) {
+  text-align: left;
+}
+
+th:nth-child(1) { width: 126px; }
+th:nth-child(2) { width: 260px; }
+th:nth-child(3) { width: 116px; }
+th:nth-child(4) { width: 128px; }
+th:nth-child(5) { width: 128px; }
+
+@media (max-width: 980px) {
+  .dashboard {
+    width: min(100vw - 24px, 1680px);
+    padding-top: 16px;
+  }
+
+  .hero,
+  .control-strip {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric-main {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 560px) {
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-main {
+    grid-column: auto;
+  }
+
+  .control-strip label,
+  .control-strip select,
+  .control-strip button {
+    width: 100%;
+  }
+}
+
+</style>
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Daily Settlement</p>
+          <h1>黄金小微结算看板</h1>
+          <p id="status" class="status">读取中...</p>
+        </div>
+        
+      </header>
+
+      <section class="summary" aria-label="核心指标">
+        <div class="metric metric-main">
+          <span>日结算金额</span>
+          <strong id="sumSettlement">-</strong>
+        </div>
+        <div class="metric">
+          <span>净成交总额</span>
+          <strong id="sumGmv">-</strong>
+        </div>
+        <div class="metric">
+          <span>下单成功订单数</span>
+          <strong id="sumOrders">-</strong>
+        </div>
+        <div class="metric">
+          <span>下单成功总克重</span>
+          <strong id="sumQuantity">-</strong>
+        </div>
+      </section>
+
+      <section class="control-strip">
+        <label>
+          日期
+          <select id="rangeFilter">
+            <option value="30">最近30天</option>
+            <option value="7">最近7天</option>
+            <option value="all">全部</option>
+          </select>
+        </label>
+        <label>
+          商家名称
+          <select id="merchantFilter">
+            <option value="">请选择</option>
+          </select>
+        </label>
+        <button id="clearBtn">清空</button>
+        <button id="queryBtn">查询</button>
+      </section>
+
+      <section class="table-panel">
+        <div class="panel-title">
+          <h2>自然日结算明细</h2>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr id="tableHead"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+          </div>
+      </section>
+    </main>
+    <script>window.__SETTLEMENT_DATA__ = {
+  "updatedAt": "2026-08-11T13:27:56.532Z",
+  "source": "vdm_operation.selfmall_market_jiesuan:latest_partition",
+  "rows": [
+    {
+      "bus_date": "2026-08-10",
+      "company_name": "甄酒网(深圳)电子商务有限公司",
+      "daily_settlement_ratio": 0.2701,
+      "daily_settle_amt": 36101.67,
+      "net_gmv": 141786.08,
+      "mall_pay_suc_order_cnt": 31,
+      "mall_pay_suc_sale_price_amt": 147546,
+      "mall_pay_suc_deal_price_amt": 144456.49,
+      "mall_pay_suc_specs": 107,
+      "mall_pay_suc_sku_price_amt": 147564.71,
+      "mall_pay_suc_coupon_amount": 3089.51,
+      "mall_afs_refunded_order_cnt": 2,
+      "mall_afs_refunded_sale_price_amt": 2753,
+      "mall_afs_refunded_deal_price_amt": 2670.41,
+      "mall_afs_refunded_specs": 2,
+      "mall_afs_refunded_sku_price_amt": 2753.81,
+      "mall_afs_refunded_coupon_amount": 82.59,
+      "mall_afs_returned_refunded_order_cnt": 0,
+      "mall_afs_returned_refunded_sale_price_amt": null,
+      "mall_afs_returned_refunded_deal_price_amt": null,
+      "mall_afs_returned_refunded_specs": null,
+      "mall_afs_returned_refunded_sku_price_amt": null,
+      "mall_afs_returned_refunded_coupon_amount": null,
+      "mall_afs_schd_refund_interest_cnt": 0,
+      "mall_afs_schd_refund_interest_amt": 0,
+      "ds": "20260810"
+    }
+  ],
+  "totals": {
+    "daily_settle_amt": 36101.67,
+    "net_gmv": 141786.08,
+    "mall_pay_suc_order_cnt": 31,
+    "mall_pay_suc_specs": 107
+  }
+};</script>
+<script>
+const state = {
+  payload: null,
+  rows: []
+};
+
+const number = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 2 });
+const currency = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+
+const tableBody = document.querySelector("#tableBody");
+const tableHead = document.querySelector("#tableHead");
+const rangeFilter = document.querySelector("#rangeFilter");
+const merchantFilter = document.querySelector("#merchantFilter");
+const statusText = document.querySelector("#status");
+
+const columns = [
+  ["bus_date", "业务日期 ▲", "text"],
+  ["company_name", "企业名称", "text"],
+  ["daily_settlement_ratio", "日结算系数", "number"],
+  ["daily_settle_amt", "日结算金额", "money"],
+  ["net_gmv", "净成交总额", "money"],
+  ["mall_pay_suc_order_cnt", "下单成功订单数", "number"],
+  ["mall_pay_suc_sale_price_amt", "下单成功总销售价", "money"],
+  ["mall_pay_suc_deal_price_amt", "下单成功总成交价", "money"],
+  ["mall_pay_suc_specs", "下单成功总克重", "number"],
+  ["mall_pay_suc_sku_price_amt", "下单成功总供货价", "money"],
+  ["mall_pay_suc_coupon_amount", "下单成功使用优惠券总金额", "money"],
+  ["mall_afs_refunded_order_cnt", "仅退款成功订单数", "number"],
+  ["mall_afs_refunded_sale_price_amt", "仅退款成功总销售价", "money"],
+  ["mall_afs_refunded_deal_price_amt", "仅退款成功总成交价", "money"],
+  ["mall_afs_refunded_specs", "仅退款成功总克重", "number"],
+  ["mall_afs_refunded_sku_price_amt", "仅退款成功总供货价", "money"],
+  ["mall_afs_refunded_coupon_amount", "仅退款使用优惠券总金额", "money"],
+  ["mall_afs_returned_refunded_order_cnt", "退货退款成功订单数", "number"],
+  ["mall_afs_returned_refunded_sale_price_amt", "退货退款成功总销售价", "money"],
+  ["mall_afs_returned_refunded_deal_price_amt", "退货退款成功总成交价", "money"],
+  ["mall_afs_returned_refunded_specs", "退货退款成功总克重", "number"],
+  ["mall_afs_returned_refunded_sku_price_amt", "退货退款成功总供货价", "money"],
+  ["mall_afs_returned_refunded_coupon_amount", "退货退款使用优惠券总金额", "money"],
+  ["mall_afs_schd_refund_interest_cnt", "退款贴息订单数", "number"],
+  ["mall_afs_schd_refund_interest_amt", "退款贴息总金额", "money"],
+  ["ds", "分区日期", "text"]
+];
+
+function formatNumber(value, money = false) {
+  const numeric = Number(value || 0);
+  return money ? currency.format(numeric) : number.format(numeric);
+}
+
+function applyFilters() {
+  const range = rangeFilter.value;
+  const merchant = merchantFilter.value;
+  let rows = [...state.rows].sort((a, b) => String(a.bus_date).localeCompare(String(b.bus_date)));
+
+  if (merchant) rows = rows.filter((row) => row.company_name === merchant);
+
+  if (range !== "all" && rows.length > 0) {
+    const latest = rows.reduce((max, row) => (row.bus_date > max ? row.bus_date : max), rows[0].bus_date);
+    const boundary = new Date(latest);
+    boundary.setDate(boundary.getDate() - Number(range) + 1);
+    rows = rows.filter((row) => new Date(row.bus_date) >= boundary);
+  }
+
+  render(rows);
+}
+
+function render(rows) {
+  const totals = rows.reduce(
+    (total, row) => ({
+      daily_settle_amt: total.daily_settle_amt + Number(row.daily_settle_amt || 0),
+      net_gmv: total.net_gmv + Number(row.net_gmv || 0),
+      mall_pay_suc_order_cnt: total.mall_pay_suc_order_cnt + Number(row.mall_pay_suc_order_cnt || 0),
+      mall_pay_suc_specs: total.mall_pay_suc_specs + Number(row.mall_pay_suc_specs || 0)
+    }),
+    { daily_settle_amt: 0, net_gmv: 0, mall_pay_suc_order_cnt: 0, mall_pay_suc_specs: 0 }
+  );
+
+  document.querySelector("#sumSettlement").textContent = formatNumber(totals.daily_settle_amt, true);
+  document.querySelector("#sumGmv").textContent = formatNumber(totals.net_gmv, true);
+  document.querySelector("#sumOrders").textContent = formatNumber(totals.mall_pay_suc_order_cnt);
+  document.querySelector("#sumQuantity").textContent = formatNumber(totals.mall_pay_suc_specs);
+
+  tableBody.innerHTML = rows
+    .map(
+      (row) => `
+        <tr>
+          ${columns
+            .map(([key, , type]) => {
+              const value = row[key] ?? "";
+              const display = type === "money" ? formatNumber(value, true) : type === "number" ? formatNumber(value) : value;
+              return `<td title="${display}">${display}</td>`;
+            })
+            .join("")}
+        </tr>
+      `
+    )
+    .join("");
+}
+
+function hydrateMerchants(rows) {
+  const merchants = [...new Set(rows.map((row) => row.company_name).filter(Boolean))];
+  merchantFilter.innerHTML = '<option value="">请选择</option>';
+  merchants.forEach((merchant) => {
+    const option = document.createElement("option");
+    option.value = merchant;
+    option.textContent = merchant;
+    merchantFilter.append(option);
+  });
+}
+
+async function loadData() {
+  statusText.textContent = "读取中...";
+  state.payload = window.__SETTLEMENT_DATA__;
+  state.rows = state.payload.rows || [];
+  tableHead.innerHTML = columns.map(([, label]) => `<th>${label}</th>`).join("");
+  hydrateMerchants(state.rows);
+  applyFilters();
+  statusText.textContent = `导出时间：${new Date(state.payload.updatedAt).toLocaleString("zh-CN")}`;
+}
+
+async function refreshData() {
+  statusText.textContent = "静态查看版不支持更新数据";
+}
+
+document.querySelector("#queryBtn").addEventListener("click", applyFilters);
+document.querySelector("#clearBtn").addEventListener("click", () => {
+  rangeFilter.value = "30";
+  merchantFilter.value = "";
+  applyFilters();
+});
+document.querySelector("#refreshBtn")?.remove();
+rangeFilter.addEventListener("change", applyFilters);
+merchantFilter.addEventListener("change", applyFilters);
+
+loadData().catch((error) => {
+  statusText.textContent = error.message;
+});
+
+</script>
+  </body>
+</html>
