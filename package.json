@@ -1,0 +1,14 @@
+{
+  "name": "yingxiaohua-settlement-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "refresh": "node scripts/refresh-data.js",
+    "export": "node scripts/export-static.js",
+    "refresh:export": "npm run refresh && npm run export",
+    "publish:pages": "zsh scripts/publish-pages.sh"
+  }
+}
